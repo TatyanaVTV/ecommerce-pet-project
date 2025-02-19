@@ -1,10 +1,8 @@
-package ru.aston.dto.reviews;
+package ru.aston.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import jakarta.validation.constraints.*;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
@@ -13,15 +11,20 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CommentDto {
-
     private Long id;
 
+    @NotNull
     private Long userId;
 
+    @NotNull
     private Long productId;
 
+    @Size(min = 3, max = 2000)
     private String comment;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Integer rating;
+
+    @NotNull
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt;
 }

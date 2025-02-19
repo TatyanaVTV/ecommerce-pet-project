@@ -1,18 +1,20 @@
 CREATE TABLE IF NOT EXISTS comments (
-    id SERIAL PRIMARY KEY,
+    id BIGSERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL,
     product_id BIGINT NOT NULL,
-    comment TEXT NOT NULL,
-    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    comment TEXT NOT NULL CHECK (char_length(comment) >= 3),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_comments_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_comments_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS recommendations (
-    id SERIAL PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS product_scores (
+    id BIGSERIAL PRIMARY KEY,
+    product_id BIGINT NOT NULL,
     user_id BIGINT NOT NULL,
-    recommended_product_id BIGINT NOT NULL,
-    rating INT CHECK (rating BETWEEN 1 AND 5),
-    score DECIMAL(3,2) CHECK (score BETWEEN 0 AND 1),
+    rating INTEGER CHECK (rating BETWEEN 1 AND 5) NOT NULL,
+    CONSTRAINT fk_scores_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_scores_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+    CONSTRAINT unique_user_product UNIQUE (user_id, product_id) -- prevents duplicate ratings
 );
-
-CREATE INDEX idx_comments_user ON comments (user_id);
-CREATE INDEX idx_comments_product ON comments (product_id);

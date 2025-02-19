@@ -7,16 +7,19 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="untitled" />
-        <module name="comment_recommendation" />
+        <module name="comment-service" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
+      <module name="comment_recommendation" target="21" />
       <module name="untitled" target="22" />
     </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="comment-service" options="-parameters" />
       <module name="comment_recommendation" options="-parameters" />
+      <module name="ecommerce-platform" options="-parameters" />
     </option>
   </component>
 </project>
