@@ -10,6 +10,7 @@ import ru.aston.dto.UpdateCommentDto;
 import ru.aston.entity.Comment;
 import ru.aston.entity.Score;
 import ru.aston.exception.ForbiddenException;
+import ru.aston.kafka.KafkaProducerService;
 import ru.aston.mapper.CommentMapper;
 import ru.aston.repository.CommentRepository;
 import ru.aston.repository.ScoreRepository;
@@ -26,6 +27,8 @@ public class CommentServiceImpl implements CommentService {
     private final CommentRepository commentRepository;
     private final CommentMapper commentMapper;
     private final ScoreRepository scoreRepository;
+    private final KafkaProducerService kafkaProducerService;
+
 
     @Override
     @Transactional
@@ -52,6 +55,8 @@ public class CommentServiceImpl implements CommentService {
 
         Comment savedComment = commentRepository.save(comment);
         log.info("Комментарий успешно создан: {}", savedComment);
+
+        kafkaProducerService.sendCommentEvent("Comment added: " + savedComment.getId());
 
         return commentMapper.toDto(savedComment);
     }

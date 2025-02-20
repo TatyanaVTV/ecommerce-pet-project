@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import ru.aston.dto.ScoreDto;
 import ru.aston.entity.Score;
 import ru.aston.exception.ForbiddenException;
+import ru.aston.kafka.KafkaProducerService;
 import ru.aston.mapper.ScoreMapper;
 import ru.aston.repository.ScoreRepository;
 
@@ -19,6 +20,7 @@ import java.util.Optional;
 public class ScoreServiceImpl implements ScoreService {
     private final ScoreRepository scoreRepository;
     private final ScoreMapper scoreMapper;
+    private final KafkaProducerService kafkaProducerService;
 
     @Override
     public ScoreDto getProductScore(Long productId) {
@@ -44,6 +46,9 @@ public class ScoreServiceImpl implements ScoreService {
         });
         score.setRating(rating);
         scoreRepository.save(score);
+
+        kafkaProducerService.sendScoreEvent("New rating: Product " + productId + " by User " + userId + " - " + rating);
+
         log.info("Продукт {} успешно оценен пользователем {}", productId, userId);
     }
 
