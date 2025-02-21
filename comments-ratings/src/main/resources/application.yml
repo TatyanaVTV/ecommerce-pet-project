@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: comments-ratings  # ← Новое имя микросервиса
+    name: comments-ratings
 
   datasource:
     url: jdbc:postgresql://localhost:5432/comment_db
@@ -29,7 +29,7 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
     consumer:
-      group-id: comments-ratings-group  # ← Теперь группа названа в соответствии с микросервисом
+      group-id: comments-ratings-group
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
