@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: order-service
+  datasource:
+    username: postgres
+    password: admin
+    url: jdbc:postgresql://localhost:5433/order_db
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: payment-service
