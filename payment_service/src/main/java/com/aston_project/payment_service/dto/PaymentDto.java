@@ -6,12 +6,26 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import javax.validation.constraints.NotNull;
+import java.math.BigDecimal;
+
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class PaymentDTO {
+public class PaymentDto {
 
+    private Long id;
+
+    @NotNull
     private Long orderId;
+
+    @NotNull
+    private BigDecimal sum;
+
+    @NotNull
+    private BigDecimal price;
+
+    @NotNull
     private PaymentStatus status;
 }

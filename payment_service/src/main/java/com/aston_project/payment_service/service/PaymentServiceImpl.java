@@ -1,17 +1,15 @@
 package com.aston_project.payment_service.service;
 
-import com.aston_project.payment_service.dto.PaymentDTO;
+import com.aston_project.payment_service.dto.PaymentDto;
 import com.aston_project.payment_service.entity.Payment;
 import com.aston_project.payment_service.entity.PaymentStatus;
 import com.aston_project.payment_service.exceptions.PaymentNotFoundException;
+import com.aston_project.payment_service.mapper.PaymentMapper;
 import com.aston_project.payment_service.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -22,40 +20,39 @@ public class PaymentServiceImpl implements PaymentService {
     private final PaymentRepository paymentRepository;
 
     @Override
-    public Long create(Payment payment) {
+    public PaymentDto create(PaymentDto paymentDTO) {
+        log.info("Creating new payment with id: {}", paymentDTO.getId());
+
+        Payment payment = PaymentMapper.toEntity(paymentDTO);
+        processPayment(payment.getOrderId());
         Payment savedPayment = paymentRepository.save(payment);
-        return savedPayment.getId();
+        PaymentDto savedPaymentDTO = PaymentMapper.toDTO(savedPayment);
+
+        log.info("Payment with id: {} has been created", savedPaymentDTO);
+        return savedPaymentDTO;
     }
 
     @Override
-    public Payment getPayment(Long id) {
-        return paymentRepository.findById(id)
+    public PaymentDto getPayment(Long id) {
+        log.info("Getting payment with id: {}", id);
+
+        Payment payment = paymentRepository.findById(id)
                 .orElseThrow(() -> new PaymentNotFoundException(id));
-    }
+        PaymentDto paymentDTO = PaymentMapper.toDTO(payment);
 
-    @Override
-    public PaymentStatus getPaymentStatus(Long id) {
-        return getPayment(id).getStatus();
+        log.info("Payment with id: {} has been retrieved", paymentDTO);
+        return paymentDTO;
     }
 
     @Override
     public void processPayment(Long id) {
-        Payment payment = getPayment(id);
-        log.info("Payment request has been sent to external SBP Service API.");
+        log.info("Processing payment with id: {}", id);
+
+        PaymentDto payment = getPayment(id);
         payment.setStatus(PaymentStatus.PROVIDED);
-        paymentRepository.save(payment);
+        Payment savedPayment = PaymentMapper.toEntity(payment);
+        paymentRepository.save(savedPayment);
+
+        log.info("Payment with id: {} has been processed", id);
     }
-
-    public PaymentDTO paymentToDto(Payment payment) {
-        return new PaymentDTO(payment.getOrderId(), payment.getStatus());
-    }
-
-//    public Payment dtoToPayment(PaymentDTO paymentDTO) {
-//    }
-
-
-
-
-
-
 }

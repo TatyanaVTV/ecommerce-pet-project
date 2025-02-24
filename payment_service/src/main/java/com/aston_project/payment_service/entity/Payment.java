@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.util.Objects;
 
 @Entity
@@ -25,12 +26,25 @@ public class Payment {
     @Column(name = "order_id")
     private Long orderId;
 
+    @Column(name = "price")
+    private BigDecimal price;
+
     @Column(name = "sum")
-    private Long sum;
+    private BigDecimal sum;
 
     @Enumerated(EnumType.ORDINAL)
     @Column(name = "status")
     private PaymentStatus status;
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Payment payment)) return false;
+        return Objects.equals(id, payment.id);
+    }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
 }

@@ -1,20 +1,12 @@
 package com.aston_project.payment_service.service;
 
-import com.aston_project.payment_service.entity.Payment;
-import com.aston_project.payment_service.entity.PaymentStatus;
-
-import java.util.List;
+import com.aston_project.payment_service.dto.PaymentDto;
 
 public interface PaymentService {
 
-    public Long create(Payment payment);
+    PaymentDto create(PaymentDto paymentDTO);
 
-    public PaymentStatus getPaymentStatus(Long id);
+    PaymentDto getPayment(Long id);
 
-    public Payment getPayment(Long id);
-
-    public void processPayment(Long id);
-    //Отправляет запрос и в зависимости от ответа меняет его статус.
-
-
+    void processPayment(Long id);
 }
