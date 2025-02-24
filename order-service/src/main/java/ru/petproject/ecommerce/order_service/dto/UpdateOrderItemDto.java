@@ -6,6 +6,5 @@ import lombok.Data;
 @Data
 @Builder
 public class UpdateOrderItemDto {
-    private Long orderId;
     private Integer quantity;
 }

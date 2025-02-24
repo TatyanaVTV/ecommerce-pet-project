@@ -4,9 +4,10 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.*;
 import org.antlr.v4.runtime.misc.NotNull;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -24,9 +25,13 @@ public class Order {
     @NotNull
     private Long userId;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "status")
     @NotNull
     private Status status = Status.NEW;
+
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+    private List<OrderItem> orderItems = new ArrayList<>();
 
     @Column(name = "total_Cost", columnDefinition = "DECIMAL(10,2) DEFAULT 0.00")
     private BigDecimal totalCost;
@@ -45,20 +50,12 @@ public class Order {
     @Column(name = "deleted", columnDefinition = "BOOLEAN NOT NULL DEFAULT FALSE")
     private boolean deleted;
 
-    public enum Status {
-        NEW,
-        AWAITING_PAYMENT,
-        PAID_SUCCESS,
-        PAID_FAILURE,
-        CANCELLED,
-        DELIVERED
-    }
-
     @PrePersist
     protected void onCreate() {
         status = Status.NEW;
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
+        orderItems = new ArrayList<>();
         deleted = false;
     }
 
