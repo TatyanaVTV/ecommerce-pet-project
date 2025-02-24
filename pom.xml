@@ -17,6 +17,7 @@
 
     <name>ecommerce-pet-project</name>
     <modules>
+        <module>productService</module>
         <module>comments-ratings</module>
     </modules>
 
@@ -25,7 +26,6 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <spring-boot.version>3.3.2</spring-boot.version>
     </properties>
-
 
     <dependencyManagement>
         <dependencies>

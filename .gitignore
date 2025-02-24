@@ -1,6 +1,15 @@
 # Compiled class file
 *.class
-
+HELP.md
+target/
+out/
+mvnw
+mvnw.cmd
+productService.iml
+.gitignore
+.gitattributes
+.idea
+src/test
 # Log file
 *.log
 
