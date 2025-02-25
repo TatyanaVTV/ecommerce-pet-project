@@ -26,9 +26,6 @@ public class Payment {
     @Column(name = "order_id")
     private Long orderId;
 
-    @Column(name = "price")
-    private BigDecimal price;
-
     @Column(name = "sum")
     private BigDecimal sum;
 
