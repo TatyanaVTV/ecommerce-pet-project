@@ -16,4 +16,7 @@ public class Category {
 
     @Column(nullable = false, length = 50)
     private String name;
+
+    @Column(nullable = false)
+    private boolean deleted = false;
 }

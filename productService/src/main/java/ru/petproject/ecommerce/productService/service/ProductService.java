@@ -2,11 +2,15 @@ package ru.petproject.ecommerce.productService.service;
 
 import ru.petproject.ecommerce.productService.dto.ProductDto;
 import ru.petproject.ecommerce.productService.exceptions.ProductNotFoundException;
+import ru.petproject.ecommerce.productService.exceptions.UserNotAuthException;
+import ru.petproject.ecommerce.productService.kafka.UserListener;
 import ru.petproject.ecommerce.productService.model.Category;
 import ru.petproject.ecommerce.productService.model.Product;
 import ru.petproject.ecommerce.productService.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -15,6 +19,8 @@ import java.util.stream.Collectors;
 public class ProductService {
     @Autowired
     private ProductRepository productRepository;
+
+    UserListener userListener;
 
     public List<ProductDto> findAllProducts() {
         return productRepository.findByDeletedFalse().stream()
@@ -27,13 +33,36 @@ public class ProductService {
                 .map(this::convertToDTO);
     }
 
-    public ProductDto createProduct(ProductDto productDTO) {
-        Product product = convertToEntity(productDTO);
-        Product savedProduct = productRepository.save(product);
-        return convertToDTO(savedProduct);
+    public ProductDto createProduct(ProductDto productDTO, String userLogin) {
+        if (userListener.isUserAuthorized(userLogin) && userListener.isUserAdmin(userLogin)) {
+            Product product = convertToEntity(productDTO);
+            Product savedProduct = productRepository.save(product);
+            return convertToDTO(savedProduct);        }
+        throw new UserNotAuthException(userLogin);
+
     }
 
-    public void deleteProduct(Long id) {
+    public ProductDto updateProduct(Long id, ProductDto productDTO, String userLogin) {
+        if (userListener.isUserAuthorized(userLogin) && userListener.isUserAdmin(userLogin)) {
+            Product product = productRepository.findByIdAndDeletedFalse(id)
+                    .orElseThrow(() -> new ProductNotFoundException(id));
+            product.setName(productDTO.getName());
+            product.setDescription(productDTO.getDescription());
+            product.setPrice(productDTO.getPrice());
+            product.setStock(productDTO.getStock());
+            product.setCategoryId(new Category(productDTO.getCategoryId(), null, false));
+            product.setUpdated_at(LocalDateTime.now());
+            product = productRepository.save(product);
+            return convertToDTO(product);
+        }
+        throw new UserNotAuthException(userLogin);
+
+    }
+
+    public void deleteProduct(Long id, String userLogin) {
+        if (!userListener.isUserAuthorized(userLogin) || !userListener.isUserAdmin(userLogin)) {
+            throw new UserNotAuthException(userLogin);
+        }
         Product product = productRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new ProductNotFoundException(id));
         product.setDeleted(true);
@@ -41,13 +70,14 @@ public class ProductService {
     }
 
     private ProductDto convertToDTO(Product product) {
+        Long categoryId = (product.getCategoryId() != null) ? product.getCategoryId().getId() : null;
         return new ProductDto(
                 product.getId(),
                 product.getName(),
                 product.getDescription(),
                 product.getPrice(),
                 product.getStock(),
-                product.getCategoryId().getId(),
+                categoryId,
                 product.getCreated_at(),
                 product.getUpdated_at(),
                 product.isDeleted()

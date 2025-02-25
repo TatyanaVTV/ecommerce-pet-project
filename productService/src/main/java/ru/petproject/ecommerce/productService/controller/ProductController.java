@@ -27,19 +27,24 @@ public class ProductController {
                 .orElseThrow(() -> new ProductNotFoundException(id));
     }
 
+    @PutMapping("/{id}")
+    public ProductDto updateProduct(@RequestHeader("userLog") String userLog, @PathVariable Long id, @RequestBody ProductDto productDTO) {
+        return productService.updateProduct(id, productDTO, userLog);
+    }
+
+    @PostMapping
+    public ProductDto createProduct(@RequestBody ProductDto productDto, @RequestParam String userLog) {
+        return productService.createProduct(productDto, userLog);
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteById(@PathVariable Long id, @RequestParam String userLog) {
+        productService.deleteProduct(id, userLog);
+    }
+
     @ExceptionHandler(ProductNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public String handleProductNotFoundException(ProductNotFoundException ex) {
         return ex.getMessage();
-    }
-
-    @PostMapping
-    public ProductDto createProduct(@RequestBody ProductDto productDto) {
-        return productService.createProduct(productDto);
-    }
-
-    @DeleteMapping("/{id}")
-    public void deleteById(@PathVariable Long id) {
-        productService.deleteProduct(id);
     }
 }
