@@ -24,8 +24,5 @@ public class PaymentDto {
     private BigDecimal sum;
 
     @NotNull
-    private BigDecimal price;
-
-    @NotNull
     private PaymentStatus status;
 }
