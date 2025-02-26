@@ -9,6 +9,7 @@ import ru.petproject.ecommerce.user_service.kafka.KafkaProducer;
 import ru.petproject.ecommerce.user_service.model.User;
 import ru.petproject.ecommerce.user_service.repository.UserRepository;
 import ru.petproject.ecommerce.user_service.security.JwtTokenProvider;
+import ru.petproject.ecommerce.user_service.security.UserPrincipal;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -40,7 +41,6 @@ public class AuthController {
     private KafkaProducer kafkaProducer;
 
 
-
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest) {
         try {
@@ -68,7 +68,7 @@ public class AuthController {
         user.setEmail(signUpRequest.getEmail());
         user.setPassword(passwordEncoder.encode(signUpRequest.getPassword()));
         user.setName(signUpRequest.getName());
-        user.setRole("USER");
+        user.setRole(signUpRequest.getRole());
         user.setCreatedAt(LocalDateTime.now());
 
         userRepository.save(user);
@@ -76,5 +76,28 @@ public class AuthController {
         kafkaProducer.sendMessage("User registered: " + user.getEmail());
 
         return ResponseEntity.ok("User registered successfully!");
+    }
+
+    @GetMapping("/isAdmin")
+    public ResponseEntity<?> isUserAdmin() {
+        // Получаем данные аутентифицированного пользователя
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() || authentication.getPrincipal() instanceof String) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not authenticated");
+        }
+
+        // Проверяем, что principal является UserPrincipal
+        if (!(authentication.getPrincipal() instanceof UserPrincipal)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid authentication");
+        }
+
+        // Получаем UserPrincipal из аутентификации
+        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+
+        // Проверяем, является ли пользователь администратором
+        boolean isAdmin = userPrincipal.getAuthorities().stream()
+                .anyMatch(authority -> authority.getAuthority().equals("ADMIN"));
+
+        return ResponseEntity.ok(isAdmin);
     }
 }
