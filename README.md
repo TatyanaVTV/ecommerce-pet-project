@@ -19,5 +19,5 @@
 | **Product Service** | Управление товарами               | Spring Boot, PostgreSQL           | Мария ([MariaDudinova](https://github.com/MariaDudinova))  |
 | **Order Service**   | Корзина, заказы                   | Spring Boot, PostgreSQL           | Екатерина ([kateshap](https://github.com/kateshap))  |
 | **Payment Service** | Оплата                            | Spring Boot, PostgreSQL, Kafka    | Дмитрий ([fuckstrout](https://github.com/fuckstrout))  |
-| **Review Service**  | Отзывы, комментарии               | Spring Boot, Kafka, Redis         | Игорь ([Cakypa217](https://github.com/Cakypa217))  |
+| **Comment Service**  | Отзывы, комментарии               | Spring Boot, Kafka         | Игорь ([Cakypa217](https://github.com/Cakypa217))  |
 ---
