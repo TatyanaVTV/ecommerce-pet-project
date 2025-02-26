@@ -21,3 +21,5 @@
 | **Payment Service** | Оплата                            | Spring Boot, PostgreSQL, Kafka    | Дмитрий ([fuckstrout](https://github.com/fuckstrout))  |
 | **Comment Service**  | Отзывы, комментарии               | Spring Boot, Kafka         | Игорь ([Cakypa217](https://github.com/Cakypa217))  |
 ---
+
+![Project scheme](https://github.com/TatyanaVTV/ecommerce-pet-project/blob/develop/diagram/projectScheme.png)
