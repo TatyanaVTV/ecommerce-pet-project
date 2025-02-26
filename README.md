@@ -7,19 +7,17 @@
 ## ⚙️ Технологии:
 
 - **Backend:** Java 21, Spring Boot 3.3.2
-- **База данных:** PostgreSQL, Redis
-- **Сообщения:** RabbitMQ, Kafka
-- **Поиск:** Elasticsearch
-- **Платежи:** Stripe API
+- **База данных:** PostgreSQL
+- **Сообщения:** Kafka
 - **Контейнеризация:** Docker
 
 ## 🛠️ Структура микросервисов:
 
-| Микросервис         | Описание                          | Технологии                        |
-|---------------------|-----------------------------------|-----------------------------------|
-| **User Service**    | Регистрация, авторизация, профили | Spring Boot, JWT, PostgreSQL      |
-| **Product Service** | Управление товарами               | Spring Boot, ElasticSearch        |
-| **Order Service**   | Корзина, заказы                   | Spring Boot, PostgreSQL           |
-| **Payment Service** | Оплата                            | Spring Boot, Stripe API, RabbitMQ |
-| **Review Service**  | Отзывы, рекомендации              | Spring Boot, Kafka, Redis         |
+| Микросервис         | Описание                          | Технологии                        |Разработчик                        |
+|---------------------|-----------------------------------|-----------------------------------|-----------------------------------|
+| **User Service**    | Регистрация, авторизация          | Spring Boot, JWT, PostgreSQL      | Георгий ([qwesha](https://github.com/qwesha))  |
+| **Product Service** | Управление товарами               | Spring Boot, PostgreSQL           | Мария ([MariaDudinova](https://github.com/MariaDudinova))  |
+| **Order Service**   | Корзина, заказы                   | Spring Boot, PostgreSQL           | Екатерина ([kateshap](https://github.com/kateshap))  |
+| **Payment Service** | Оплата                            | Spring Boot, PostgreSQL, Kafka    | Дмитрий ([fuckstrout](https://github.com/fuckstrout))  |
+| **Review Service**  | Отзывы, комментарии               | Spring Boot, Kafka, Redis         | Игорь ([Cakypa217](https://github.com/Cakypa217))  |
 ---
