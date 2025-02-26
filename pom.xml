@@ -19,6 +19,7 @@
     <modules>
         <module>productService</module>
         <module>comments-ratings</module>
+        <module>user-service</module>
     </modules>
 
     <properties>

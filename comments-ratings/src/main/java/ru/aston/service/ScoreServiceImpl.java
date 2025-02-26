@@ -8,7 +8,6 @@ import ru.aston.dto.ScoreDto;
 import ru.aston.entity.Score;
 import ru.aston.exception.ForbiddenException;
 import ru.aston.kafka.KafkaProducerService;
-import ru.aston.mapper.ScoreMapper;
 import ru.aston.repository.ScoreRepository;
 
 import java.util.List;
@@ -19,7 +18,6 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ScoreServiceImpl implements ScoreService {
     private final ScoreRepository scoreRepository;
-    private final ScoreMapper scoreMapper;
     private final KafkaProducerService kafkaProducerService;
 
     @Override
