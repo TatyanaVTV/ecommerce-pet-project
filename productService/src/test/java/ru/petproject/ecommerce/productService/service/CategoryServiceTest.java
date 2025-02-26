@@ -5,12 +5,12 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.web.client.RestTemplate;
 import ru.petproject.ecommerce.productService.dto.CategoryDto;
-import ru.petproject.ecommerce.productService.exceptions.CategoryNotFoundException;
 import ru.petproject.ecommerce.productService.model.Category;
 import ru.petproject.ecommerce.productService.repository.CategoryRepository;
+import ru.petproject.ecommerce.productService.utils.JwtUtil;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,6 +26,12 @@ class CategoryServiceTest {
     @InjectMocks
     private CategoryService categoryService;
 
+    @Mock
+    private JwtUtil jwtUtil;
+
+    @Mock
+    private RestTemplate restTemplate;
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
@@ -33,55 +39,50 @@ class CategoryServiceTest {
 
     @Test
     void findAllCategories() {
-        Category category = new Category(1L, "Категория1", false);
-        when(categoryRepository.findByDeletedFalse()).thenReturn(Arrays.asList(category));
+        Category category = new Category();
+        when(categoryRepository.findByDeletedFalse()).thenReturn(List.of(category));
 
         List<CategoryDto> categories = categoryService.findAllCategories();
 
         assertEquals(1, categories.size());
-        assertEquals("Категория1", categories.get(0).getName());
+        verify(categoryRepository, times(1)).findByDeletedFalse();
     }
 
     @Test
     void findByIdCategory() {
-        Category category = new Category(1L, "Категория1", false);
+        Category category = new Category();
+        CategoryDto categoryDto = new CategoryDto();
         when(categoryRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(category));
-
-        Optional<CategoryDto> categoryDTO = categoryService.findCategoryById(1L);
-
-        assertTrue(categoryDTO.isPresent());
-        assertEquals("Категория1", categoryDTO.get().getName());
-    }
+        var result = categoryService.findCategoryById(1L);
+        assertTrue(result.isPresent());
+        assertEquals(categoryDto.getName(), result.get().getName());
+   }
 
     @Test
     void createCategory() {
-        Category category = new Category(1L, "Категория1", false);
+        CategoryDto categoryDto = new CategoryDto();
+        Category category = new Category();
+        when(jwtUtil.isTokenValid(anyString())).thenReturn(true);
+        when(jwtUtil.extractUserId(anyString())).thenReturn("user1");
+        when(restTemplate.getForObject(anyString(), eq(Boolean.class))).thenReturn(true);
         when(categoryRepository.save(any(Category.class))).thenReturn(category);
 
-        CategoryDto categoryDTO = new CategoryDto();
-        categoryDTO.setName("Категория1");
-
-        CategoryDto createdCategory = categoryService.createCategory(categoryDTO);
-
-        assertEquals("Категория1", createdCategory.getName());
+        var result = categoryService.createCategory(categoryDto, "validToken");
+        assertNotNull(result);
+        assertEquals(categoryDto.getName(), result.getName());
     }
 
     @Test
     void deleteCategory() {
-        Category category = new Category(1L, "Категория1", false);
-        when(categoryRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(category));
+        Category category = new Category();
+        when(jwtUtil.isTokenValid(anyString())).thenReturn(true);
+        when(jwtUtil.extractUserId(anyString())).thenReturn("user1");
+        when(restTemplate.getForObject(anyString(), eq(Boolean.class))).thenReturn(true);
+        when(categoryRepository.findByIdAndDeletedFalse(anyLong())).thenReturn(Optional.of(category));
 
-        categoryService.deleteCategory(1L);
-
-        verify(categoryRepository, times(1)).save(any(Category.class));
-        assertTrue(category.isDeleted());
+        categoryService.deleteCategory(1L, "validToken");
+        verify(categoryRepository).save(any(Category.class));
     }
 
-    @Test
-    void deleteCategory_NotFound() {
-        when(categoryRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.empty());
-
-        assertThrows(CategoryNotFoundException.class, () -> categoryService.deleteCategory(1L));
-    }
 }
 

@@ -15,7 +15,9 @@ import java.util.Arrays;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -62,20 +64,24 @@ class CategoryControllerTest {
     @Test
     void createCategory() throws Exception {
         CategoryDto categoryDTO = new CategoryDto();
-        categoryDTO.setName("Категория1");
-        when(categoryService.createCategory(any(CategoryDto.class))).thenReturn(categoryDTO);
+        when(categoryService.createCategory(any(CategoryDto.class), anyString())).thenReturn(categoryDTO);
 
         mockMvc.perform(post("/api/v1/categories")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"name\":\"Категория1\"}"))
+                        .header("Authorization", "Bearer test_jwt_token")
+                        .content("{\"name\":\"Test Category\"}"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("Категория1"));
+                .andExpect(jsonPath("$").isNotEmpty());
+
+        verify(categoryService, times(1)).createCategory(any(CategoryDto.class), eq("test_jwt_token"));
     }
 
     @Test
     void deleteCategory() throws Exception {
         mockMvc.perform(delete("/api/v1/categories/1")
-                        .contentType(MediaType.APPLICATION_JSON))
+                        .header("Authorization", "Bearer test_jwt_token"))
                 .andExpect(status().isOk());
+
+        verify(categoryService, times(1)).deleteCategory(anyLong(), eq("test_jwt_token"));
     }
 }

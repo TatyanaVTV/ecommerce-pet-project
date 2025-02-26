@@ -1,6 +1,7 @@
 package ru.petproject.ecommerce.productService.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.client.RestTemplate;
 import ru.petproject.ecommerce.productService.dto.CategoryDto;
 import ru.petproject.ecommerce.productService.exceptions.CategoryNotFoundException;
 import ru.petproject.ecommerce.productService.exceptions.UserNotAuthException;
@@ -18,7 +19,10 @@ public class CategoryService {
 
     @Autowired
     private CategoryRepository categoryRepository;
+    @Autowired
     private JwtUtil jwtUtil;
+    @Autowired
+    private RestTemplate restTemplate;
 
     public List<CategoryDto> findAllCategories() {
         return categoryRepository.findByDeletedFalse().stream()
@@ -31,9 +35,15 @@ public class CategoryService {
                 .map(this::convertToDTO);
     }
 
+    private boolean isAdmin(String token) {
+        String url = "http://user-service/isAdmin?token=" + token; //URL для запроса к userService
+        Boolean response = restTemplate.getForObject(url, Boolean.class);
+        return Boolean.TRUE.equals(response);
+    }
+
     public CategoryDto createCategory(CategoryDto categoryDTO, String token) {
         String userId = jwtUtil.extractUserId(token);
-        if (jwtUtil.isTokenValid(token)) {
+        if (jwtUtil.isTokenValid(token) && isAdmin(token)) {
             Category category = convertToEntity(categoryDTO);
             Category savedCategory = categoryRepository.save(category);
             return convertToDTO(savedCategory);
@@ -43,7 +53,7 @@ public class CategoryService {
 
     public void deleteCategory(Long id, String token) {
         String userId = jwtUtil.extractUserId(token);
-        if (jwtUtil.isTokenValid(token)) {
+        if (jwtUtil.isTokenValid(token) && isAdmin(token)) {
             Category category = categoryRepository.findByIdAndDeletedFalse(id)
                     .orElseThrow(() -> new CategoryNotFoundException(id));
             category.setDeleted(true);

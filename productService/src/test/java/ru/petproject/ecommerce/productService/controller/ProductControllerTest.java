@@ -62,7 +62,6 @@ class ProductControllerTest {
 
     @Test
     void createProduct() throws Exception {
-        //ProductDto productDto = new ProductDto();
         ProductDto savedProductDto = new ProductDto();
         when(productService.createProduct(any(ProductDto.class), anyString())).thenReturn(savedProductDto);
 

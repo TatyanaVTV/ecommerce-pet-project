@@ -20,9 +20,6 @@ public class ProductController {
     @Autowired
     private ProductService productService;
 
-//    @Autowired
-//    private JwtUtil jwtUtils;
-
     @GetMapping
     public List<ProductDto> findAllProducts() {
         logger.info("Вывод всех товаров");
@@ -57,10 +54,4 @@ public class ProductController {
         token = token.replace("Bearer ", "");
         productService.deleteProduct(id, token);
     }
-
-//    @ExceptionHandler(ProductNotFoundException.class)
-//    @ResponseStatus(HttpStatus.NOT_FOUND)
-//    public String handleProductNotFoundException(ProductNotFoundException ex) {
-//        return ex.getMessage();
-//    }
 }

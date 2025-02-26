@@ -1,5 +1,6 @@
 package ru.petproject.ecommerce.productService.service;
 
+import org.springframework.web.client.RestTemplate;
 import ru.petproject.ecommerce.productService.dto.ProductDto;
 import ru.petproject.ecommerce.productService.exceptions.ProductNotFoundException;
 import ru.petproject.ecommerce.productService.exceptions.UserNotAuthException;
@@ -22,6 +23,9 @@ public class ProductService {
 
     private JwtUtil jwtUtil;
 
+    @Autowired
+    private RestTemplate restTemplate;
+
     public List<ProductDto> findAllProducts() {
         return productRepository.findByDeletedFalse().stream()
                 .map(this::convertToDTO)
@@ -33,22 +37,25 @@ public class ProductService {
                 .map(this::convertToDTO);
     }
 
+    private boolean isAdmin(String token) {
+        String url = "http://user-service/isAdmin?token=" + token; //URL для запроса к userService
+        Boolean response = restTemplate.getForObject(url, Boolean.class);
+        return Boolean.TRUE.equals(response);
+    }
+
     public ProductDto createProduct(ProductDto productDTO, String token) {
         String userId = jwtUtil.extractUserId(token);
-        if (jwtUtil.isTokenValid(token)) {
-        // if (userListener.isUserAuthorized(userLogin) && userListener.isUserAdmin(userLogin)) {
+        if (jwtUtil.isTokenValid(token) && isAdmin(token)) {
             Product product = convertToEntity(productDTO);
             Product savedProduct = productRepository.save(product);
             return convertToDTO(savedProduct);
         }
         throw new UserNotAuthException(userId);
-
     }
 
     public ProductDto updateProduct(Long id, ProductDto productDTO, String token) {
         String userId = jwtUtil.extractUserId(token);
-        if (jwtUtil.isTokenValid(token)) {
-        // if (userListener.isUserAuthorized(userId) && userListener.isUserAdmin(userLogin)) {
+        if (jwtUtil.isTokenValid(token) && isAdmin(token)) {
             Product product = productRepository.findByIdAndDeletedFalse(id)
                     .orElseThrow(() -> new ProductNotFoundException(id));
             product.setName(productDTO.getName());
@@ -65,7 +72,7 @@ public class ProductService {
 
     public void deleteProduct(Long id, String token) {
         String userId = jwtUtil.extractUserId(token);
-        if (jwtUtil.isTokenValid(token)) {
+        if (jwtUtil.isTokenValid(token) && isAdmin(token)) {
             Product product = productRepository.findByIdAndDeletedFalse(id)
                     .orElseThrow(() -> new ProductNotFoundException(id));
             product.setDeleted(true);
