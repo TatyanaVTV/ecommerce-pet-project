@@ -39,6 +39,7 @@ public class ProductController {
 
     @PostMapping
     public ProductDto createProduct(@RequestBody ProductDto productDto, @RequestHeader("Authorization") String token) {
+        logger.info("Создание товара");
         token = token.replace("Bearer ", "");
         return productService.createProduct(productDto, token);
     }
@@ -46,13 +47,13 @@ public class ProductController {
     @PutMapping("/{id}")
     public ProductDto updateProduct(@PathVariable Long id, @RequestBody ProductDto productDTO, @RequestHeader("Authorization") String token) {
         token = token.replace("Bearer ", "");
-        //Long userId = jwtUtils.extractUserId(jwtUtils.resolveToken(request));
         logger.info("Обновление товара с id: {}", id);
         return productService.updateProduct(id, productDTO, token);
     }
 
     @DeleteMapping("/{id}")
     public void deleteById(@PathVariable Long id, @RequestHeader("Authorization") String token) {
+        logger.info("Удаление товара с id: {}", id);
         token = token.replace("Bearer ", "");
         productService.deleteProduct(id, token);
     }
