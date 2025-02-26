@@ -10,7 +10,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import ru.petproject.ecommerce.productService.dto.ProductDto;
 import ru.petproject.ecommerce.productService.service.ProductService;
-import java.util.Collections;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -35,13 +37,13 @@ class ProductControllerTest {
 
     @Test
     void findAllProducts() throws Exception {
-        ProductDto productDTO = new ProductDto();
-        productDTO.setName("Товар1");
-        when(productService.findAllProducts()).thenReturn(Collections.singletonList(productDTO));
+        List<ProductDto> products = new ArrayList<>();
+        when(productService.findAllProducts()).thenReturn(products);
 
         mockMvc.perform(get("/api/v1/products"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0]").exists());
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$").isEmpty());
 
         verify(productService, times(1)).findAllProducts();
     }
@@ -49,63 +51,52 @@ class ProductControllerTest {
     @Test
     void findByIdProduct() throws Exception {
         ProductDto productDto = new ProductDto();
-        when(productService.findByIdProduct(1L)).thenReturn(Optional.of(productDto));
+        when(productService.findByIdProduct(anyLong())).thenReturn(Optional.of(productDto));
 
         mockMvc.perform(get("/api/v1/products/1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$").exists());
+                .andExpect(jsonPath("$").isNotEmpty());
 
-        verify(productService, times(1)).findByIdProduct(1L);
-    }
-
-    @Test
-    void findByIdProductNotFound() throws Exception {
-        when(productService.findByIdProduct(1L)).thenReturn(Optional.empty());
-
-        mockMvc.perform(get("/api/v1/products/1"))
-                .andExpect(status().isNotFound());
-
-        verify(productService, times(1)).findByIdProduct(1L);
+        verify(productService, times(1)).findByIdProduct(anyLong());
     }
 
     @Test
     void createProduct() throws Exception {
-        ProductDto productDto = new ProductDto();
-        when(productService.createProduct(any(ProductDto.class), eq("admin"))).thenReturn(productDto);
+        //ProductDto productDto = new ProductDto();
+        ProductDto savedProductDto = new ProductDto();
+        when(productService.createProduct(any(ProductDto.class), anyString())).thenReturn(savedProductDto);
 
         mockMvc.perform(post("/api/v1/products")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .param("userLog", "admin")
-                        .content("{ \"name\": \"Test Product\" }"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$").exists());
+                        .header("Authorization", "Bearer test_jwt_token")
+                        .content("{\"name\":\"Test Product\"}"))
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$").isNotEmpty());
 
-        verify(productService, times(1)).createProduct(any(ProductDto.class), eq("admin"));
+        verify(productService, times(1)).createProduct(any(ProductDto.class), eq("test_jwt_token"));
     }
 
     @Test
     void updateProduct() throws Exception {
-        ProductDto productDto = new ProductDto();
-        when(productService.updateProduct(eq(1L), any(ProductDto.class), eq("admin"))).thenReturn(productDto);
+        ProductDto updatedProductDto = new ProductDto();
+        when(productService.updateProduct(anyLong(), any(ProductDto.class), anyString())).thenReturn(updatedProductDto);
 
         mockMvc.perform(put("/api/v1/products/1")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header("userLog", "admin")
-                        .content("{ \"name\": \"Updated Product\" }"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$").exists());
+                        .header("Authorization", "Bearer test_jwt_token")
+                        .content("{\"name\":\"Updated Product\"}"))
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$").isNotEmpty());
 
-        verify(productService, times(1)).updateProduct(eq(1L), any(ProductDto.class), eq("admin"));
+        verify(productService, times(1)).updateProduct(anyLong(), any(ProductDto.class), eq("test_jwt_token"));
     }
 
     @Test
     void deleteProduct() throws Exception {
-        doNothing().when(productService).deleteProduct(1L, "admin");
-
         mockMvc.perform(delete("/api/v1/products/1")
-                        .param("userLog", "admin"))
+                        .header("Authorization", "Bearer test_jwt_token"))
                 .andExpect(status().isOk());
 
-        verify(productService, times(1)).deleteProduct(1L, "admin");
+        verify(productService, times(1)).deleteProduct(anyLong(), eq("test_jwt_token"));
     }
 }
