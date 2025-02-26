@@ -2,7 +2,6 @@ package ru.petproject.ecommerce.order_service.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.antlr.v4.runtime.misc.NotNull;
 import java.math.BigDecimal;
 
 @Entity
@@ -22,7 +21,6 @@ public class OrderItem {
     private Order order;
 
     @Column(name = "product_id", nullable = false)
-    @NotNull
     private Long productId;
 
     @Column(name = "quantity")
@@ -32,7 +30,7 @@ public class OrderItem {
     private BigDecimal price;
 
     @Column(name = "deleted")
-    private boolean deleted = false;
+    private boolean deleted;
 
     @PrePersist
     protected void onCreate() {

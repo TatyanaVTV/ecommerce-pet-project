@@ -17,14 +17,16 @@ public class OrderController {
 
     private final OrderServiceImpl orderService;
 
-    @GetMapping("/get/order/by/userId/{userId}")
-    public List<OrderDto> findOrdersByUserId(@PathVariable Long userId) {
-        return orderService.findOrdersByUserId(userId);
+    @GetMapping("/get/order/by/userId")
+    public List<OrderDto> findOrdersByUserId(@RequestHeader("Authorization") String token) {
+        token = token.replace("Bearer ", "");
+        return orderService.findOrdersByUserId(token);
     }
 
-    @GetMapping("/get/orders/by/{userId}/status/new")
-    public OrderDto findOrdersByUserIdAndStatusNew(@PathVariable Long userId) {
-        return orderService.findOrdersWithStatusNewByUserId(userId);
+    @GetMapping("/get/orders/by/to/status/new")
+    public OrderDto findOrdersByUserIdAndStatusNew(@RequestHeader("Authorization") String token) {
+        token = token.replace("Bearer ", "");
+        return orderService.findOrdersWithStatusNewByUserId(token);
     }
 
     @GetMapping("/get/order/item/by/{orderItemId}")
@@ -37,9 +39,11 @@ public class OrderController {
         return orderService.findOrderItemsByOrderId(orderId);
     }
 
-    @PostMapping("/add/order/item/{userId}")
-    public OrderDto addOrderItemToOrder(@PathVariable Long userId, @RequestBody OrderItemDtoWithoutOrderId dto) {
-        return orderService.addOrderItemToOrder(userId, dto);
+    @PostMapping("/add/order/item")
+    public OrderDto addOrderItemToOrder(@RequestHeader("Authorization") String token,
+                                        @RequestBody OrderItemDtoWithoutOrderId dto) {
+        token = token.replace("Bearer ", "");
+        return orderService.addOrderItemToOrder(token, dto);
     }
 
     @DeleteMapping("/delete/order/by/{orderId}")
