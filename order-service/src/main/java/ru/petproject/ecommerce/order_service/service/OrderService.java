@@ -7,13 +7,13 @@ import java.util.List;
 
 public interface OrderService {
     @Transactional
-    OrderDto findOrdersWithStatusNewByUserId(Long userId);
+    OrderDto findOrdersWithStatusNewByUserId(String token);
     @Transactional
     OrderItemDto findOrderItemById(Long orderItemId);
     @Transactional
     List<OrderItemDto> findOrderItemsByOrderId(Long orderId);
     @Transactional
-    OrderDto addOrderItemToOrder(Long userId, OrderItemDtoWithoutOrderId dto);
+    OrderDto addOrderItemToOrder(String token, OrderItemDtoWithoutOrderId dto);
     @Transactional
     Order createNewOrder(Long userId);
     @Transactional
@@ -24,8 +24,7 @@ public interface OrderService {
     OrderDto placeOrder(Long orderId);
     @Transactional
     void deleteOrder(Long orderId);
-    @Transactional
     OrderDto findOrderById(Long orderId);
     @Transactional
-    List<OrderDto> findOrdersByUserId(Long userId);
+    List<OrderDto> findOrdersByUserId(String token);
 }

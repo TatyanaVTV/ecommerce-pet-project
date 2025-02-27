@@ -11,5 +11,4 @@ public class OrderItemDtoWithoutOrderId {
     private Long productId;
     private Integer quantity;
     private BigDecimal price;
-    private boolean deleted;
 }

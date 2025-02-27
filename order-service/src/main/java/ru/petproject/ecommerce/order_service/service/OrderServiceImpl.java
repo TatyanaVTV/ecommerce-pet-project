@@ -4,6 +4,7 @@ import lombok.ToString;
 import ru.petproject.ecommerce.order_service.dto.*;
 import ru.petproject.ecommerce.order_service.exception.OrderItemNotFoundException;
 import ru.petproject.ecommerce.order_service.exception.OrderNotFoundException;
+import ru.petproject.ecommerce.order_service.jwt.JwtTokenProvider;
 import ru.petproject.ecommerce.order_service.mapper.OrderItemMapper;
 import ru.petproject.ecommerce.order_service.mapper.OrderMapper;
 import ru.petproject.ecommerce.order_service.model.Order;
@@ -35,6 +36,7 @@ public class  OrderServiceImpl implements OrderService {
     private final OrderItemRepository orderItemRepository;
     private final OrderItemMapper orderItemMapper;
     private final KafkaTemplate<String, String> kafkaTemplate;
+    private final JwtTokenProvider jwtTokenProvider = new JwtTokenProvider();
 
     @Override
     public OrderDto findOrderById(Long orderId) {
@@ -47,8 +49,9 @@ public class  OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public List<OrderDto> findOrdersByUserId(Long userId) {
-        log.info("Receiving orders by user id: {}", userId);
+    public List<OrderDto> findOrdersByUserId(String token) {
+        log.info("Receiving orders by token: {}", token);
+        Long userId = jwtTokenProvider.getUserIdFromJWT(token);
         List<Order> orders = orderRepository.findByUserIdAndDeletedFalse(userId);
         for (Order order : orders) {
             order.setTotalCost(getTotalCostForNewOrder(order));
@@ -58,8 +61,9 @@ public class  OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public OrderDto findOrdersWithStatusNewByUserId(Long userId) {
-        log.info("Receiving order with status NEW by user id: {}", userId);
+    public OrderDto findOrdersWithStatusNewByUserId(String token) {
+        log.info("Receiving order with status NEW by token: {}", token);
+        Long userId = jwtTokenProvider.getUserIdFromJWT(token);
         Order order = orderRepository.findByUserIdAndDeletedFalseAndStatusEquals(userId, Status.NEW);
         order.setTotalCost(getTotalCostForNewOrder(order));
         log.info("Order received successfully: {}",order.getId());
@@ -85,31 +89,34 @@ public class  OrderServiceImpl implements OrderService {
 
     @Transactional
     @Override
-    public OrderDto addOrderItemToOrder(Long userId, OrderItemDtoWithoutOrderId dto) {
-        log.info("Trying to add order item to the order: {}", dto.toString());
-       Order order = orderRepository.findByUserIdAndDeletedFalseAndStatusEquals(userId, Status.NEW);
-        if (order == null) {
-            order = createNewOrder(userId);
-        }
-        OrderItem orderItem = OrderItem.builder()
-                .order(order)
-                .productId(dto.getProductId())
-                .quantity(dto.getQuantity())
-                .price(dto.getPrice())
-                .build();
-        order.getOrderItems().add(orderItem);
-        orderRepository.save(order);
-        order.setTotalCost(getTotalCostForNewOrder(order));
-        log.info("Order item successfully added to the order: {}", order.getId());
-        return orderMapper.toOrderDto(order);
+    public OrderDto addOrderItemToOrder(String token, OrderItemDtoWithoutOrderId dto) {
+            log.info("Trying to add order item to the order: {}", dto.toString());
+            Long userid = jwtTokenProvider.getUserIdFromJWT(token);
+            Order order = orderRepository.findByUserIdAndDeletedFalseAndStatusEquals(userid, Status.NEW);
+            if (order == null) {
+                order = createNewOrder(userid);
+            }
+            OrderItem orderItem = OrderItem.builder()
+                    .order(order)
+                    .productId(dto.getProductId())
+                    .quantity(dto.getQuantity())
+                    .price(dto.getPrice())
+                    .deleted(false)
+                    .build();
+            order.getOrderItems().add(orderItem);
+            orderRepository.save(order);
+            order.setTotalCost(getTotalCostForNewOrder(order));
+            log.info("Order item successfully added to the order: {}", order.getId());
+            return orderMapper.toOrderDto(order);
+
     }
 
     @Transactional
     @Override
-    public Order createNewOrder(Long userId) {
+    public Order createNewOrder(Long userid) {
         log.info("Creating new order");
         Order order = Order.builder()
-                .userId(userId)
+                .userId(userid)
                 .status(Status.NEW)
                 .totalCost(START_TOTAL_COST)
                 .paymentMethod(START_PAYMENT_METHOD)

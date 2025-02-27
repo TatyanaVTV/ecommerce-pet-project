@@ -3,7 +3,6 @@ package ru.petproject.ecommerce.order_service.model;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.*;
-import org.antlr.v4.runtime.misc.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -22,16 +21,14 @@ public class Order {
     private Long id;
 
     @Column(name = "user_id", nullable = false)
-    @NotNull
     private Long userId;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
-    @NotNull
-    private Status status = Status.NEW;
+    private Status status;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
-    private List<OrderItem> orderItems = new ArrayList<>();
+    private List<OrderItem> orderItems;
 
     @Column(name = "total_Cost", columnDefinition = "DECIMAL(10,2) DEFAULT 0.00")
     private BigDecimal totalCost;
