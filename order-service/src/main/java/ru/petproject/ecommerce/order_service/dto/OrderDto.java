@@ -9,6 +9,7 @@ import java.util.List;
 @Data
 @Builder
 public class OrderDto {
+    private Long id;
     private Long userId;
     private String status;
     private BigDecimal totalCost;
