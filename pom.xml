@@ -17,9 +17,11 @@
 
     <name>ecommerce-pet-project</name>
     <modules>
+        <module>payment_service</module>
         <module>order-service</module>
         <module>productService</module>
         <module>comments-ratings</module>
+        <module>user-service</module>
     </modules>
 
     <properties>
