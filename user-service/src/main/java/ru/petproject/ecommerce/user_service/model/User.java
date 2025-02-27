@@ -19,7 +19,7 @@ public class User {
     private String email;
     private String password;
     private String name;
-    private String role; // Роли: USER, ADMIN
+    private String role;
     private LocalDateTime createdAt;
 
     public Long getUserId() {

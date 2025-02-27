@@ -1,0 +1,20 @@
+CREATE TABLE IF NOT EXISTS orders (
+    id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    total_cost DECIMAL(10,2) DEFAULT 0.00,
+    status VARCHAR(20) DEFAULT 'NEW',
+    payment_method VARCHAR(20) DEFAULT 'SBPFake',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    deleted BOOLEAN NOT NULL DEFAULT FALSE
+);
+
+CREATE TABLE IF NOT EXISTS order_items (
+    id SERIAL PRIMARY KEY,
+    order_id BIGINT NOT NULL,
+    product_id BIGINT NOT NULL,
+    quantity INT NOT NULL,
+    price DECIMAL(10,2),
+    deleted BOOLEAN NOT NULL DEFAULT FALSE,
+    CONSTRAINT fk_order_id FOREIGN KEY (order_id) REFERENCES orders(id)
+);

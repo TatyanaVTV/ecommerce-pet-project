@@ -17,7 +17,7 @@ public class UserPrincipal implements UserDetails {
     }
 
     public Long getId() {
-        return user.getUserId(); // Предполагается, что в классе User есть метод getUserId()
+        return user.getUserId();
     }
 
     @Override
