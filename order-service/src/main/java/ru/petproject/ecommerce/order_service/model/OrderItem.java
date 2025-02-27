@@ -1,8 +1,8 @@
 package ru.petproject.ecommerce.order_service.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
-import org.antlr.v4.runtime.misc.NotNull;
 import java.math.BigDecimal;
 
 @Entity
