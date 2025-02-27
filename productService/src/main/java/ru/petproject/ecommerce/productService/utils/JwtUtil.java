@@ -21,11 +21,18 @@ public class JwtUtil {
         return extractAllClaims(token).getSubject();
     }
 
+    public boolean isTokenExpired(Claims claims) {
+        return claims.getExpiration().toInstant().isBefore(java.time.Instant.now());
+    }
+
     public boolean isTokenValid(String token) {
         try {
-            extractAllClaims(token);
-            return true;
+            Claims claims = extractAllClaims(token);
+            boolean isValid = !isTokenExpired(claims);
+            System.out.println("Token validity: " + isValid);
+            return isValid;
         } catch (Exception e) {
+            System.out.println("Token validation failed: " + e.getMessage());
             return false;
         }
     }

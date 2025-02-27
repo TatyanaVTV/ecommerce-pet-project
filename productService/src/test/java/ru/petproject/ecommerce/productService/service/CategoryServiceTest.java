@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
 import ru.petproject.ecommerce.productService.dto.CategoryDto;
 import ru.petproject.ecommerce.productService.model.Category;
@@ -35,6 +36,10 @@ class CategoryServiceTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+        categoryService.restTemplate = restTemplate;
+        categoryService.userServiceUrl = "http://localhost:8080/user-service/isAdmin";
+        ReflectionTestUtils.setField(categoryService, "userServiceUrl", "http://localhost:8080/user-service/isAdmin");
+
     }
 
     @Test
@@ -64,7 +69,7 @@ class CategoryServiceTest {
         Category category = new Category();
         when(jwtUtil.isTokenValid(anyString())).thenReturn(true);
         when(jwtUtil.extractUserId(anyString())).thenReturn("user1");
-        when(restTemplate.getForObject(anyString(), eq(Boolean.class))).thenReturn(true);
+        when(restTemplate.postForObject(anyString(), any(), eq(Boolean.class))).thenReturn(true);
         when(categoryRepository.save(any(Category.class))).thenReturn(category);
 
         var result = categoryService.createCategory(categoryDto, "validToken");
@@ -77,7 +82,7 @@ class CategoryServiceTest {
         Category category = new Category();
         when(jwtUtil.isTokenValid(anyString())).thenReturn(true);
         when(jwtUtil.extractUserId(anyString())).thenReturn("user1");
-        when(restTemplate.getForObject(anyString(), eq(Boolean.class))).thenReturn(true);
+        when(restTemplate.postForObject(anyString(), any(), eq(Boolean.class))).thenReturn(true);
         when(categoryRepository.findByIdAndDeletedFalse(anyLong())).thenReturn(Optional.of(category));
 
         categoryService.deleteCategory(1L, "validToken");

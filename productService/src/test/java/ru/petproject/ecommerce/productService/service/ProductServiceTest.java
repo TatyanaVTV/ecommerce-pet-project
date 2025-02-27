@@ -2,9 +2,15 @@ package ru.petproject.ecommerce.productService.service;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
 import ru.petproject.ecommerce.productService.dto.ProductDto;
 import ru.petproject.ecommerce.productService.exceptions.ProductNotFoundException;
@@ -19,6 +25,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import ru.petproject.ecommerce.productService.utils.JwtUtil;
 
+@ExtendWith(MockitoExtension.class)
 class ProductServiceTest {
 
     @Mock
@@ -36,6 +43,10 @@ class ProductServiceTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+       // productService = new ProductService();
+        productService.restTemplate = restTemplate;
+        productService.userServiceUrl = "http://localhost:8080/user-service/isAdmin";
+        ReflectionTestUtils.setField(productService, "userServiceUrl", "http://localhost:8080/user-service/isAdmin");
     }
 
     @Test
@@ -60,6 +71,33 @@ class ProductServiceTest {
         verify(productRepository, times(1)).findByIdAndDeletedFalse(1L);
     }
 
+    @Test
+    void isAdmin_ReturnsTrue() {
+        String token = "validToken";
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<String> request = new HttpEntity<>(token, headers);
+
+        when(restTemplate.postForObject(eq("http://localhost:8080/user-service/isAdmin"), any(HttpEntity.class), eq(Boolean.class)))
+                .thenReturn(true);
+
+        boolean result = productService.isAdmin(token);
+        assertTrue(result);
+    }
+
+    @Test
+    void isAdmin_ReturnsFalse() {
+        String token = "invalidToken";
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<String> request = new HttpEntity<>(token, headers);
+
+        when(restTemplate.postForObject(eq("http://localhost:8080/user-service/isAdmin"), any(HttpEntity.class), eq(Boolean.class)))
+                .thenReturn(false);
+
+        boolean result = productService.isAdmin(token);
+        assertFalse(result);
+    }
 
     @Test
     void createProductUserAdmin() {
@@ -67,12 +105,14 @@ class ProductServiceTest {
         Product product = new Product();
         when(jwtUtil.isTokenValid(anyString())).thenReturn(true);
         when(jwtUtil.extractUserId(anyString())).thenReturn("user1");
-        when(restTemplate.getForObject(anyString(), eq(Boolean.class))).thenReturn(true);
+        when(restTemplate.postForObject(anyString(), any(HttpEntity.class), eq(Boolean.class))).thenReturn(true); // Мокируем, что ответ - true
         when(productRepository.save(any(Product.class))).thenReturn(product);
 
         var result = productService.createProduct(productDto, "validToken");
         assertNotNull(result);
         assertEquals(productDto.getName(), result.getName());
+
+        System.out.println("Created product: " + result); // Добавляем вывод отладочной информации
     }
 
     @Test
@@ -80,7 +120,7 @@ class ProductServiceTest {
         ProductDto productDto = new ProductDto();
         when(jwtUtil.isTokenValid(anyString())).thenReturn(true);
         when(jwtUtil.extractUserId(anyString())).thenReturn("user1");
-        when(restTemplate.getForObject(anyString(), eq(Boolean.class))).thenReturn(false);
+        when(restTemplate.postForObject(anyString(), any(), eq(Boolean.class))).thenReturn(false);
 
         assertThrows(UserNotAuthException.class, () -> productService.createProduct(productDto, "validToken"));
     }
@@ -99,7 +139,7 @@ class ProductServiceTest {
         Product product = new Product();
         when(jwtUtil.isTokenValid(anyString())).thenReturn(true);
         when(jwtUtil.extractUserId(anyString())).thenReturn("user1");
-        when(restTemplate.getForObject(anyString(), eq(Boolean.class))).thenReturn(true);
+        when(restTemplate.postForObject(anyString(), any(), eq(Boolean.class))).thenReturn(true);
         when(productRepository.findByIdAndDeletedFalse(anyLong())).thenReturn(Optional.of(product));
         when(productRepository.save(any(Product.class))).thenReturn(product);
 
@@ -113,7 +153,7 @@ class ProductServiceTest {
         ProductDto productDto = new ProductDto();
         when(jwtUtil.isTokenValid(anyString())).thenReturn(true);
         when(jwtUtil.extractUserId(anyString())).thenReturn("user1");
-        when(restTemplate.getForObject(anyString(), eq(Boolean.class))).thenReturn(true);
+        when(restTemplate.postForObject(anyString(), any(), eq(Boolean.class))).thenReturn(true);
         when(productRepository.findByIdAndDeletedFalse(anyLong())).thenReturn(Optional.empty());
 
         assertThrows(ProductNotFoundException.class, () -> productService.updateProduct(1L, productDto, "validToken"));
@@ -124,7 +164,7 @@ class ProductServiceTest {
         ProductDto productDto = new ProductDto();
         when(jwtUtil.isTokenValid(anyString())).thenReturn(true);
         when(jwtUtil.extractUserId(anyString())).thenReturn("user1");
-        when(restTemplate.getForObject(anyString(), eq(Boolean.class))).thenReturn(false);
+        when(restTemplate.postForObject(anyString(), any(), eq(Boolean.class))).thenReturn(false);
 
         assertThrows(UserNotAuthException.class, () -> productService.updateProduct(1L, productDto, "validToken"));
     }
@@ -139,20 +179,22 @@ class ProductServiceTest {
 
     @Test
     void deleteProduct() {
+        //productService = new ProductService();
         Product product = new Product();
         when(jwtUtil.isTokenValid(anyString())).thenReturn(true);
         when(jwtUtil.extractUserId(anyString())).thenReturn("user1");
-        when(restTemplate.getForObject(anyString(), eq(Boolean.class))).thenReturn(true);
+        when(restTemplate.postForObject(anyString(), any(), eq(Boolean.class))).thenReturn(true);
         when(productRepository.findByIdAndDeletedFalse(anyLong())).thenReturn(Optional.of(product));
 
         productService.deleteProduct(1L, "validToken");
         verify(productRepository).save(any(Product.class));
     }
+
     @Test
     void deleteProduct_NonAdminUser() {
         when(jwtUtil.isTokenValid(anyString())).thenReturn(true);
         when(jwtUtil.extractUserId(anyString())).thenReturn("user1");
-        when(restTemplate.getForObject(anyString(), eq(Boolean.class))).thenReturn(false);
+        when(restTemplate.postForObject(anyString(), any(), eq(Boolean.class))).thenReturn(false);
 
         assertThrows(UserNotAuthException.class, () -> productService.deleteProduct(1L, "validToken"));
     }
@@ -167,7 +209,7 @@ class ProductServiceTest {
     void deleteProductNotFound() {
         when(jwtUtil.isTokenValid(anyString())).thenReturn(true);
         when(jwtUtil.extractUserId(anyString())).thenReturn("user1");
-        when(restTemplate.getForObject(anyString(), eq(Boolean.class))).thenReturn(true);
+        when(restTemplate.postForObject(anyString(), any(), eq(Boolean.class))).thenReturn(true);
         when(productRepository.findByIdAndDeletedFalse(anyLong())).thenReturn(Optional.empty());
 
         assertThrows(ProductNotFoundException.class, () -> productService.deleteProduct(1L, "validToken"));
