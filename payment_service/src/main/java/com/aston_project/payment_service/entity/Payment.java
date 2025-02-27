@@ -29,7 +29,6 @@ public class Payment {
     @Column(name = "sum")
     private BigDecimal sum;
 
-//    @Enumerated(EnumType.ORDINAL)
     @Column(name = "status")
     private boolean status;
 
