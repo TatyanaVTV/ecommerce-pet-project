@@ -1,6 +1,5 @@
 package com.aston_project.payment_service.dto;
 
-import com.aston_project.payment_service.entity.PaymentStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,5 +23,13 @@ public class PaymentDto {
     private BigDecimal sum;
 
     @NotNull
-    private PaymentStatus status;
+    private boolean status;
+
+    public void setStatus(boolean status) {
+        this.status = status;
+    }
+
+    public boolean getStatus() {
+        return this.status;
+    }
 }

@@ -29,9 +29,9 @@ public class Payment {
     @Column(name = "sum")
     private BigDecimal sum;
 
-    @Enumerated(EnumType.ORDINAL)
+//    @Enumerated(EnumType.ORDINAL)
     @Column(name = "status")
-    private PaymentStatus status;
+    private boolean status;
 
     @Override
     public boolean equals(Object o) {
@@ -43,5 +43,13 @@ public class Payment {
     @Override
     public int hashCode() {
         return Objects.hash(id);
+    }
+
+    public void setStatus(boolean status) {
+        this.status = status;
+    }
+
+    public boolean getStatus() {
+        return this.status;
     }
 }

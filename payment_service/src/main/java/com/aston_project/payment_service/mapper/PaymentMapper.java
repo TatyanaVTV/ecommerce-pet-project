@@ -6,7 +6,12 @@ import com.aston_project.payment_service.entity.Payment;
 public class PaymentMapper {
 
     public static PaymentDto toDTO(Payment payment) {
-        return new PaymentDto(payment.getId(), payment.getOrderId(), payment.getSum(), payment.getStatus());
+        PaymentDto paymentDto = new PaymentDto();
+        paymentDto.setId(payment.getId());
+        paymentDto.setOrderId(payment.getOrderId());
+        paymentDto.setSum(payment.getSum());
+        paymentDto.setStatus(payment.getStatus());
+        return paymentDto;
     }
 
     public static Payment toEntity(PaymentDto paymentDTO) {

@@ -2,7 +2,6 @@ package com.aston_project.payment_service.service;
 
 import com.aston_project.payment_service.dto.PaymentDto;
 import com.aston_project.payment_service.entity.Payment;
-import com.aston_project.payment_service.entity.PaymentStatus;
 import com.aston_project.payment_service.exceptions.PaymentNotFoundException;
 import com.aston_project.payment_service.mapper.PaymentMapper;
 import com.aston_project.payment_service.repository.PaymentRepository;
@@ -24,7 +23,6 @@ public class PaymentServiceImpl implements PaymentService {
         log.info("Creating new payment with id: {}", paymentDTO.getId());
 
         Payment payment = PaymentMapper.toEntity(paymentDTO);
-        processPayment(payment.getOrderId());
         Payment savedPayment = paymentRepository.save(payment);
         PaymentDto savedPaymentDTO = PaymentMapper.toDTO(savedPayment);
 
@@ -49,7 +47,7 @@ public class PaymentServiceImpl implements PaymentService {
         log.info("Processing payment with id: {}", id);
 
         PaymentDto payment = getPayment(id);
-        payment.setStatus(PaymentStatus.PROVIDED);
+        payment.setStatus(true);
         Payment savedPayment = PaymentMapper.toEntity(payment);
         paymentRepository.save(savedPayment);
 
