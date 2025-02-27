@@ -6,14 +6,14 @@ spring:
     name: comments-ratings
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/comment_db
-    username: user
-    password: password
+    url: jdbc:postgresql://postgres:5432/ecommerce
+    username: ecommerce_admin
+    password: StrongPass123
     driver-class-name: org.postgresql.Driver
 
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: update
     show-sql: true
     properties:
       hibernate:
@@ -21,10 +21,10 @@ spring:
 
   sql:
     init:
-      mode: always
+      mode: never
 
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: kafka:9092
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
@@ -38,4 +38,3 @@ logging:
   level:
     root: INFO
     org.springframework: DEBUG
-

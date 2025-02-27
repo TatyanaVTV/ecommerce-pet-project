@@ -1,24 +1,72 @@
-version: '3.8'
 services:
-  product-service:
-    build:
-      context: ./productService
-      dockerfile: Dockerfile
-    ports:
-      - "8080:8080"
+  postgres:
+    image: postgres:17
+    container_name: postgres
+    restart: always
     environment:
-      SPRING_PROFILES_ACTIVE: docker
+      POSTGRES_USER: ecommerce_admin
+      POSTGRES_PASSWORD: StrongPass123
+      POSTGRES_DB: ecommerce
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - ecommerce-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ecommerce_admin -d ecommerce"]
+      interval: 10s
+      retries: 5
+      timeout: 5s
 
-  comments-ratings:
-    build:
-      context: ./comments-ratings
-      dockerfile: Dockerfile
-    ports:
-      - "8083:8083"
+  zookeeper:
+    container_name: zookeeper
+    image: confluentinc/cp-zookeeper:latest
     environment:
-      SPRING_PROFILES_ACTIVE: docker
+      ZOOKEEPER_CLIENT_PORT: 2181
+    networks:
+      - ecommerce-network
+
+  kafka:
+    healthcheck:
+      test: ["CMD", "kafka-topics", "--bootstrap-server", "kafka:9092", "--list"]
+      interval: 10s
+      retries: 5
+      timeout: 5s
+    container_name: kafka
+    image: confluentinc/cp-kafka:latest
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    ports:
+      - "9092:9092"
+    networks:
+      - ecommerce-network
+
+  kafka-setup:
+    container_name: kafka-setup
+    image: confluentinc/cp-kafka:latest
+    depends_on:
+      - kafka
+    entrypoint: [ "sh", "-c", "sleep 10 && \
+      kafka-topics --create --topic order-events --bootstrap-server kafka:9092 --partitions 3 --replication-factor 1 && \
+      kafka-topics --create --topic payment-events --bootstrap-server kafka:9092 --partitions 3 --replication-factor 1 && \
+      kafka-topics --create --topic review-events --bootstrap-server kafka:9092 --partitions 3 --replication-factor 1 && \
+      kafka-topics --create --topic comment-events --bootstrap-server kafka:9092 --partitions 3 --replication-factor 1 && \
+      kafka-topics --create --topic score-events --bootstrap-server kafka:9092 --partitions 3 --replication-factor 1 && \
+      kafka-topics --create --topic payment_topic --bootstrap-server kafka:9092 --partitions 3 --replication-factor 1 && \
+      kafka-topics --create --topic user-registration --bootstrap-server kafka:9092 --partitions 3 --replication-factor 1 && \
+      tail -f /dev/null" ]
+    networks:
+      - ecommerce-network
 
   user-service:
+    container_name: user-service
     build:
       context: ./user-service
       dockerfile: Dockerfile
@@ -26,8 +74,38 @@ services:
       - "8081:8081"
     environment:
       SPRING_PROFILES_ACTIVE: docker
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ecommerce
+      SPRING_DATASOURCE_USERNAME: ecommerce_admin
+      SPRING_DATASOURCE_PASSWORD: StrongPass123
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    networks:
+      - ecommerce-network
+
+  product-service:
+    container_name: product-service
+    build:
+      context: ./productService
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ecommerce
+      SPRING_DATASOURCE_USERNAME: ecommerce_admin
+      SPRING_DATASOURCE_PASSWORD: StrongPass123
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - ecommerce-network
 
   order-service:
+    container_name: order-service
     build:
       context: ./order-service
       dockerfile: Dockerfile
@@ -35,16 +113,63 @@ services:
       - "8082:8082"
     environment:
       SPRING_PROFILES_ACTIVE: docker
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ecommerce
+      SPRING_DATASOURCE_USERNAME: ecommerce_admin
+      SPRING_DATASOURCE_PASSWORD: StrongPass123
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    networks:
+      - ecommerce-network
 
-  postgres:
-    image: postgres:latest
-    environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
+  payment-service:
+    container_name: payment-service
+    build:
+      context: ./payment_service
+      dockerfile: Dockerfile
     ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - "8084:8084"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ecommerce
+      SPRING_DATASOURCE_USERNAME: ecommerce_admin
+      SPRING_DATASOURCE_PASSWORD: StrongPass123
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    networks:
+      - ecommerce-network
+
+  comments-ratings:
+    container_name: comments-ratings
+    build:
+      context: ./comments-ratings
+      dockerfile: Dockerfile
+    ports:
+      - "8083:8083"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ecommerce
+      SPRING_DATASOURCE_USERNAME: ecommerce_admin
+      SPRING_DATASOURCE_PASSWORD: StrongPass123
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    networks:
+      - ecommerce-network
+
+networks:
+  ecommerce-network:
+    driver: bridge
 
 volumes:
   postgres_data:

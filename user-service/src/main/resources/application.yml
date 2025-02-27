@@ -2,25 +2,41 @@ server:
   port: 8081
 
 spring:
+  application:
+    name: user-service
+
   datasource:
-    url: jdbc:postgresql://localhost:5432/userdb
-    username: geo
-    password: 14168779
+    url: jdbc:postgresql://postgres:5432/ecommerce
+    username: ecommerce_admin
+    password: StrongPass123
     driver-class-name: org.postgresql.Driver
+
   jpa:
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: update
     show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: kafka:9092
+    consumer:
+      group-id: user-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
 
 jwt:
   expiration: 86400000 # 24 hours
 
 logging:
   level:
+    root: INFO
+    org.springframework: DEBUG
     org.springframework.aop: DEBUG
     org.springframework.beans: DEBUG
     org.springframework.transaction: DEBUG
-    root: INFO
     ru.petproject.ecommerce.user_service.security.JwtTokenProvider: DEBUG
