@@ -1,6 +1,15 @@
 # Compiled class file
 *.class
-
+HELP.md
+target/
+out/
+mvnw
+mvnw.cmd
+productService.iml
+.gitignore
+.gitattributes
+.idea
+src/test
 # Log file
 *.log
 
@@ -23,6 +32,4 @@
 hs_err_pid*
 replay_pid*
 
-# IntelliJ IDEA project files
-.idea/
-payment_service/target*
+.codiumai
