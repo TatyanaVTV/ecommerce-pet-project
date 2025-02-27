@@ -25,4 +25,4 @@ replay_pid*
 
 # IntelliJ IDEA project files
 .idea/
-payment_service/target
+payment_service/target*
